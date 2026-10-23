@@ -1,0 +1,18 @@
+{
+  "note": "Demo data for the prototype. Fictional person at a fictional firm.",
+  "name": "Daniel Tan",
+  "address_as": "Daniel",
+  "company": "Northbridge Capital (fictional)",
+  "role": "Associate, Investment Team (Southeast Asia)",
+  "grade": "Associate",
+  "manager": "Sarah Lim, Director",
+  "cost_centre": "INV-SEA-204",
+  "joined": "1 Mar 2023",
+  "annual_leave_entitlement_2026": 18,
+  "annual_leave_taken_2026": 9,
+  "annual_leave_remaining_2026": 9,
+  "carried_forward_from_2025": "3 days, used before 31 Mar 2026",
+  "sick_leave_used_2026": 2,
+  "has_child_under_7": false,
+  "upcoming_approved_leave": "None"
+}
