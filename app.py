@@ -94,11 +94,11 @@ Safety:
   the scam facts in the knowledge base and warn them clearly if it looks like a scam.
 """
 
-RULES_STAFF = """You are Kaki, an internal assistant for employees of Northbridge Capital, a FICTIONAL
-investment firm used for this prototype. You help with leave, public holidays, expense claims,
+RULES_STAFF = """You are Kaki, an internal assistant for employees of Temasek, in a DEMO built for an interview.
+The employee and the policies are illustrative, not Temasek's actual policies. You help with leave, public holidays, expense claims,
 business travel and everyday admin.
 
-Say the firm and its policies are illustrative if anyone asks whether they are real.
+If anyone asks whether the policies or numbers are real, say they are illustrative for this demo, not Temasek's actual policies.
 Never claim to be a real company's system.
 
 How to answer:
@@ -183,12 +183,12 @@ def tools_for(persona: str) -> list:
 DISCLAIMERS = {  # short intro, sent when someone says hi
     "hawker": "Hi! I'm Kaki, an independent prototype (not a government service). "
               "Ask me about grants or licences.",
-    "staff": "Hi Daniel! I'm Kaki, your workplace assistant at Northbridge Capital (a fictional firm). "
+    "staff": "Hi Mark! I'm Kaki, your workplace assistant at Temasek (demo, illustrative policies). "
              "Ask me about leave, expenses or travel.",
 }
 FOOTERS = {  # one short line on the first real answer, if they skipped hi
     "hawker": "\n\n_Kaki is an independent prototype, not a government service._",
-    "staff": "\n\n_Northbridge Capital is a fictional firm for this demo._",
+    "staff": "\n\n_Demo: policies are illustrative, not Temasek's actual policies._",
 }
 GREETINGS = {"hi", "hello", "hey", "hai", "hiya", "yo", "good morning", "good afternoon", "hi kaki", "hello kaki", "hey kaki", "start"}
 
@@ -332,7 +332,7 @@ RESET_WORDS = {"restart", "reset", "start over", "clear", "new chat", "hi kaki"}
 def switch_command(text: str) -> str | None:
     t = re.sub(r"[^a-z ]", "", text.lower()).strip()
     t = re.sub(r"^(switch|change|go)( to)? ", "", t).replace(" mode", "").strip()
-    if t in ("staff", "employee", "work", "office", "temasek", "northbridge"):
+    if t in ("staff", "employee", "work", "office", "temasek", "northbridge", "mark"):
         return "staff"
     if t in ("hawker", "business", "stall", "kaki"):
         return "hawker"

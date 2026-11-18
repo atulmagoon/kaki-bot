@@ -1,6 +1,6 @@
-# Northbridge Capital employee knowledge base
+# Temasek employee knowledge base (demo)
 
-Northbridge Capital is a FICTIONAL investment firm used for this prototype. Its policies below are ILLUSTRATIVE, written for the demo. Only the Singapore public holidays are real.
+This is a DEMO for a Temasek interview. The policies below are ILLUSTRATIVE, written for the demo, and are NOT Temasek's actual policies. Only the Singapore public holidays are real.
 
 ## Singapore public holidays 2026 (real, from MOM's published list)
 - New Year's Day: Thu 1 Jan 2026
@@ -25,7 +25,7 @@ Northbridge Capital is a FICTIONAL investment firm used for this prototype. Its 
 - Sick leave: up to 14 days of outpatient sick leave a year, and up to 60 days including hospitalisation. A medical certificate is needed for every day of sick leave.
 - Childcare leave: 6 days a year for parents of a Singapore Citizen child under 7.
 - Unpaid leave: needs Director and HR approval.
-- Source: Northbridge Employee Handbook, section 4 (illustrative)
+- Source: Employee Handbook, section 4 (illustrative)
 
 ## Expense claims (illustrative)
 - Submit claims within 60 days of the expense date, with an itemised receipt. Claims submitted by the 20th are paid with that month's salary.
@@ -34,7 +34,7 @@ Northbridge Capital is a FICTIONAL investment firm used for this prototype. Its 
 - Approvals by claim amount: up to S$500 your manager; S$500.01 to S$2,000 a Director; above S$2,000 a Managing Director plus Finance.
 - Charge claims to your own cost centre unless the expense is for a specific deal; then use the deal code.
 - Alcohol-only bills, personal items and traffic fines are not claimable.
-- Source: Northbridge Finance Policy FP-02 (illustrative)
+- Source: Finance Policy FP-02 (illustrative)
 
 ## Business travel (illustrative)
 - Submit a travel request at least 10 working days before departure. Travel insurance is arranged automatically once approved.
@@ -42,12 +42,12 @@ Northbridge Capital is a FICTIONAL investment firm used for this prototype. Its 
 - Daily meal allowance (per diem): S$80 in Southeast Asia, S$120 elsewhere.
 - Flights: economy for flights under 6 hours; business class for flights of 6 hours or more for Vice Presidents and above.
 - Approvals follow the same amount limits as expense claims, based on the total estimated cost.
-- Source: Northbridge Travel Policy TP-01 (illustrative)
+- Source: Travel Policy TP-01 (illustrative)
 
 ## Who to contact (illustrative)
-- HR questions (parental leave, benefits, payroll errors): hr@northbridge.example
+- HR questions (parental leave, benefits, payroll errors): the HR team
 - IT (password resets, laptop, access): IT service desk portal
-- Finance (corporate card, reimbursement status): finance-ops@northbridge.example
+- Finance (corporate card, reimbursement status): the Finance Operations team
 
 ## Not in this knowledge base (hand off to HR, Finance or IT)
 - Pay, bonuses, promotions, performance ratings, disputes, medical details, anything about another employee, and investment or deal-specific questions.

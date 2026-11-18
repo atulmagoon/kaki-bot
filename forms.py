@@ -1,7 +1,7 @@
 """Demo application forms that Kaki can fill in, for two personas:
 
 - "hawker": a hawker stall owner dealing with NEA and SFA (FormSG-style forms)
-- "staff":  an employee at Northbridge Capital, a FICTIONAL firm (leave, expenses, travel)
+- "staff":  an employee at Temasek in a demo with illustrative policies (leave, expenses, travel)
 
 Kaki pre-fills fields it already knows, the person reviews the form on a web page and
 taps Submit (Kaki never submits on its own), and submissions are saved to submissions.json.
@@ -371,7 +371,7 @@ def submit_draft(draft_id: str, form_data: dict) -> dict:
     if draft["missing"] or draft["warnings"]:
         return draft
     draft["status"] = "submitted"
-    prefix = "KAKI" if draft["persona"] == "hawker" else "NB"
+    prefix = "KAKI" if draft["persona"] == "hawker" else "TM"
     draft["reference"] = f"{prefix}-{datetime.now():%y%m}-{secrets.randbelow(9000) + 1000}"
     draft["submitted_at"] = datetime.now().strftime("%d %b %Y, %H:%M")
     auto = _auto(draft["persona"])
@@ -429,7 +429,7 @@ table { width:100%; border-collapse:collapse; font-size:14px } td, th { text-ali
 
 BANNERS = {
     "hawker": "Kaki prototype demo. Nothing on this page is sent to any government agency.",
-    "staff": "Kaki prototype demo. Northbridge Capital is a fictional firm and its policies are illustrative.",
+    "staff": "Kaki prototype demo. Policies are illustrative, not Temasek's actual policies. Nothing is sent to any real system.",
 }
 
 
@@ -493,7 +493,7 @@ def render_list() -> str:
         for s in reversed(items)
     ) or '<tr><td colspan="4">No submissions yet.</td></tr>'
     return f"""<!doctype html><html><head><meta charset="utf-8"><title>Kaki submissions</title>{STYLE}</head>
-<body><main style="max-width:900px"><div class="demo">Kaki prototype demo. Hawker forms are not sent to any agency; Northbridge Capital is fictional.</div>
+<body><main style="max-width:900px"><div class="demo">Kaki prototype demo. Hawker forms are not sent to any agency; staff policies are illustrative.</div>
 <div class="card"><h1>Submissions received</h1>
 <p class="sub">What an approver or agency officer would see.</p>
 <div style="overflow-x:auto"><table><tr><th>Reference</th><th>Form</th><th>Submitted</th><th>Details</th></tr>{rows}</table></div>

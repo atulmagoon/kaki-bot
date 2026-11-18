@@ -3,7 +3,7 @@
 A WhatsApp agent prototype with two modes:
 
 - **Hawker mode:** helps a hawker stall owner with NEA and SFA grants, licences and helpers. Answers cite official pages; forms are pre-filled and the owner reviews and submits.
-- **Staff mode:** helps an employee of Northbridge Capital, a fictional firm, with leave, public holidays, expense claims and travel requests. Policies are illustrative; the 2026 Singapore public holidays are real.
+- **Staff mode:** helps a Temasek employee (demo; illustrative policies, not Temasek's actual policies) with leave, public holidays, expense claims and travel requests. Policies are illustrative; the 2026 Singapore public holidays are real.
 
 Send `staff` or `hawker` on WhatsApp to switch modes.
 
@@ -33,4 +33,4 @@ Deployed as a Render Blueprint (`render.yaml`): Starter plan, Singapore region. 
 
 Double-click `setup.bat` once, then `start.bat`. Copy the tunnel address plus `/whatsapp` into Twilio.
 
-Prototype only: not an official government service, and Northbridge Capital is fictional.
+Prototype only: not an official government service, and staff-mode policies are illustrative, not Temasek's actual policies.
