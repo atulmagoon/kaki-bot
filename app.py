@@ -180,13 +180,17 @@ def tools_for(persona: str) -> list:
     ]
 
 
-DISCLAIMERS = {
-    "hawker": "Hi! I'm Kaki, an independent prototype that helps hawkers with grants and licences. "
-              "I'm not an official government service.\n\n",
-    "staff": "Hi Daniel! I'm Kaki, your workplace assistant at Northbridge Capital "
-             "(a fictional firm for this demo). I can help with leave, holidays, expenses and travel.\n\n",
+DISCLAIMERS = {  # short intro, sent when someone says hi
+    "hawker": "Hi! I'm Kaki, an independent prototype (not a government service). "
+              "Ask me about grants or licences.",
+    "staff": "Hi Daniel! I'm Kaki, your workplace assistant at Northbridge Capital (a fictional firm). "
+             "Ask me about leave, expenses or travel.",
 }
-SWITCH_HINT = "\n\n(Demo tip: send #staff or #hawker to switch modes.)"
+FOOTERS = {  # one short line on the first real answer, if they skipped hi
+    "hawker": "\n\n_Kaki is an independent prototype, not a government service._",
+    "staff": "\n\n_Northbridge Capital is a fictional firm for this demo._",
+}
+GREETINGS = {"hi", "hello", "hey", "hai", "hiya", "yo", "good morning", "good afternoon", "hi kaki", "hello kaki", "hey kaki", "start"}
 
 EMPTY_TWIML = '<?xml version="1.0" encoding="UTF-8"?><Response></Response>'
 MAX_LEN = 1500  # Twilio's WhatsApp limit is 1600 characters per message
@@ -343,14 +347,17 @@ async def handle_message(user: str, text: str, num_media: int) -> None:
             HISTORY.pop(user, None)
             SEEN_USERS.add((user, new_mode))
             intro = {
-                "staff": "Switched to *employee mode*. " + DISCLAIMERS["staff"].strip()
-                         + " Try: \"How much leave do I have left?\"",
-                "hawker": "Switched to *hawker mode*. " + DISCLAIMERS["hawker"].strip()
-                          + " Try: \"Can you renew my licence for me?\"",
+                "staff": DISCLAIMERS["staff"] + " Try: \"How much leave do I have left?\"",
+                "hawker": DISCLAIMERS["hawker"] + " Try: \"Can you renew my licence?\"",
             }[new_mode]
             await send_text(user, intro)
             return
         persona = MODE.get(user, DEFAULT_MODE)
+        if text and re.sub(r"[^a-z ]", "", text.lower()).strip() in GREETINGS:
+            HISTORY.pop(user, None)
+            SEEN_USERS.add((user, persona))
+            await send_text(user, DISCLAIMERS[persona])
+            return
         if text and text.strip().lower().strip("#!. ") in RESET_WORDS:
             HISTORY.pop(user, None)
             mode_name = "employee" if persona == "staff" else "hawker"
@@ -364,7 +371,7 @@ async def handle_message(user: str, text: str, num_media: int) -> None:
             return
         if (user, persona) not in SEEN_USERS:
             SEEN_USERS.add((user, persona))
-            reply = DISCLAIMERS[persona] + reply + SWITCH_HINT
+            reply = reply + FOOTERS[persona]
         await send_text(user, reply)
     except Exception:
         log.exception("Failed to handle message from %s", user[-4:])
