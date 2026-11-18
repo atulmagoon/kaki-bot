@@ -1,11 +1,11 @@
 {
   "note": "Demo data for the prototype. Fictional employee; policies are illustrative, not Temasek's actual policies.",
-  "name": "Mark Tan",
+  "name": "Mark Lim",
   "address_as": "Mark",
   "company": "Temasek (demo; illustrative policies)",
   "role": "Associate, Investment Team (Southeast Asia)",
   "grade": "Associate",
-  "manager": "Sarah Lim, Director",
+  "manager": "Sarah Tan, Director",
   "cost_centre": "INV-SEA-204",
   "joined": "1 Mar 2023",
   "annual_leave_entitlement_2026": 18,
