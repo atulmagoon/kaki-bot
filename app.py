@@ -41,7 +41,7 @@ claude = Anthropic()  # reads ANTHROPIC_API_KEY from the environment
 app = FastAPI()
 
 BASE_DIR = Path(__file__).parent
-DEFAULT_MODE = os.environ.get("DEFAULT_MODE", "hawker")
+DEFAULT_MODE = os.environ.get("DEFAULT_MODE", "staff")
 KNOWLEDGE = {
     "hawker": (BASE_DIR / "knowledge.md").read_text(encoding="utf-8"),
     "staff": (BASE_DIR / "knowledge_staff.md").read_text(encoding="utf-8"),
