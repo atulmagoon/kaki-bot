@@ -14,7 +14,7 @@ services:
       - key: MODEL
         value: claude-haiku-5-5
       - key: DEFAULT_MODE
-        value: hawker
+        value: staff
       - key: TWILIO_WHATSAPP_FROM
         value: whatsapp:+14155238886
       # Secrets: Render asks you to paste these during setup. They are never stored in GitHub.
