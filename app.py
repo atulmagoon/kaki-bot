@@ -11,6 +11,7 @@ import hashlib
 import hmac
 import json
 import re
+import time
 import logging
 import os
 from collections import defaultdict
@@ -219,13 +220,18 @@ async def send_text(to: str, body: str) -> None:
 
 
 def run_tool(user: str, persona: str, name: str, args: dict) -> dict:
-    if name == "prepare_form":
-        result = forms.prepare_draft(
-            user, persona, args.get("form_id", ""), args.get("fields") or {}, args.get("draft_id"), STATE["base_url"]
-        )
-        log.info("prepare_form %s -> missing=%s link=%s", args.get("form_id"), result.get("missing"), bool(result.get("review_link")))
-        return result
-    return {"error": f"Unknown tool {name}"}
+    try:
+        if name == "prepare_form":
+            fields = {str(k): ("" if v is None else str(v)) for k, v in (args.get("fields") or {}).items()}
+            result = forms.prepare_draft(
+                user, persona, str(args.get("form_id", "")), fields, args.get("draft_id"), STATE["base_url"]
+            )
+            log.info("prepare_form %s -> missing=%s link=%s", args.get("form_id"), result.get("missing"), bool(result.get("review_link")))
+            return result
+        return {"error": f"Unknown tool {name}"}
+    except Exception as e:  # never let a form problem crash the conversation
+        log.exception("Tool %s failed", name)
+        return {"error": f"The form tool failed: {e}. Ask the user to rephrase the detail that caused it."}
 
 
 def trim(history: list) -> None:
@@ -236,36 +242,87 @@ def trim(history: list) -> None:
             history.pop(0)
 
 
+def call_claude(persona: str, messages: list):
+    """One model call, with a short retry for overloads and network blips."""
+    last = None
+    for attempt in range(3):
+        try:
+            return claude.messages.create(
+                model=MODEL, max_tokens=800, system=system_blocks(persona), tools=tools_for(persona), messages=messages,
+            )
+        except Exception as e:
+            last = e
+            log.warning("Model call failed (attempt %d): %s", attempt + 1, e)
+            time.sleep(1.5 * (attempt + 1))
+    raise last
+
+
+def fallback_from_tool(result: dict) -> str:
+    """Write a reply from the tool result if the model goes quiet."""
+    if not isinstance(result, dict) or result.get("error"):
+        return "Sorry, I couldn't prepare that form. Could you give me the details again?"
+    lines = [f"I've started your {result.get('form', 'form')}."]
+    for k, v in (result.get("computed") or {}).items():
+        lines.append(f"{k}: {v}")
+    for w in result.get("warnings") or []:
+        lines.append(f"Note: {w}")
+    if result.get("missing"):
+        lines.append("I still need: " + ", ".join(result["missing"]) + ".")
+    elif result.get("review_link"):
+        lines.append(f"Please check and submit it here: {result['review_link']}")
+    return "\n".join(lines)
+
+
 def ask_claude(user: str, text: str, persona: str | None = None) -> str:
     persona = persona or MODE.get(user, DEFAULT_MODE)
     history = HISTORY[user]
     history.append({"role": "user", "content": text})
-    resp = None
-    for _ in range(MAX_TOOL_ROUNDS + 1):
-        resp = claude.messages.create(
-            model=MODEL, max_tokens=600, system=system_blocks(persona), tools=tools_for(persona), messages=history,
-        )
-        history.append({"role": "assistant", "content": [b.model_dump(exclude_none=True) for b in resp.content]})
-        if resp.stop_reason != "tool_use":
+    resp, last_tool = None, None
+    nudged = False
+    for _ in range(MAX_TOOL_ROUNDS + 2):
+        resp = call_claude(persona, history)
+        content = [b.model_dump(exclude_none=True) for b in resp.content]
+        has_text = any(b.type == "text" and b.text.strip() for b in resp.content)
+        if resp.stop_reason == "tool_use":
+            history.append({"role": "assistant", "content": content})
+            results = []
+            for b in resp.content:
+                if b.type == "tool_use":
+                    last_tool = run_tool(user, persona, b.name, b.input)
+                    results.append({"type": "tool_result", "tool_use_id": b.id, "content": json.dumps(last_tool)})
+            history.append({"role": "user", "content": results})
+            continue
+        if has_text:
+            history.append({"role": "assistant", "content": content})
             break
-        results = [
-            {"type": "tool_result", "tool_use_id": b.id, "content": json.dumps(run_tool(user, persona, b.name, b.input))}
-            for b in resp.content if b.type == "tool_use"
-        ]
-        history.append({"role": "user", "content": results})
-    reply = "".join(b.text for b in resp.content if b.type == "text").strip()
-    if resp.stop_reason == "tool_use":
-        # Ran out of tool rounds: close the open tool calls so the history stays valid.
+        # Empty reply: never store it (an empty turn breaks every later call). Nudge once.
+        if not nudged:
+            nudged = True
+            history.append({"role": "assistant", "content": "(thinking)"})
+            history.append({"role": "user", "content": "Please reply to me now in plain words."})
+            continue
+        break
+    # Remove the nudge pair so it never shows up as conversation.
+    if nudged:
+        for i in range(len(history) - 1, 0, -1):
+            if history[i].get("content") == "Please reply to me now in plain words." and history[i - 1].get("content") == "(thinking)":
+                del history[i - 1:i + 1]
+                break
+    reply = "".join(b.text for b in resp.content if b.type == "text").strip() if resp else ""
+    if resp is not None and resp.stop_reason == "tool_use":
         history.append({"role": "user", "content": [
             {"type": "tool_result", "tool_use_id": b.id, "content": "Stopped: too many steps."}
             for b in resp.content if b.type == "tool_use"
         ]})
-        reply = "Sorry, I got stuck preparing that. Could you say it again?"
+        reply = ""
+    if not reply:
+        reply = fallback_from_tool(last_tool) if last_tool is not None else "Sorry, could you say that again in a different way?"
         history.append({"role": "assistant", "content": reply})
-    elif not reply:
-        reply = "Sorry, could you say that again?"
     trim(history)
     return reply
+
+
+RESET_WORDS = {"restart", "reset", "start over", "clear", "new chat", "hi kaki"}
 
 
 def switch_command(text: str) -> str | None:
@@ -294,6 +351,11 @@ async def handle_message(user: str, text: str, num_media: int) -> None:
             await send_text(user, intro)
             return
         persona = MODE.get(user, DEFAULT_MODE)
+        if text and text.strip().lower().strip("#!. ") in RESET_WORDS:
+            HISTORY.pop(user, None)
+            mode_name = "employee" if persona == "staff" else "hawker"
+            await send_text(user, f"Fresh start in {mode_name} mode. What can I help you with?")
+            return
         if text:
             reply = ask_claude(user, text, persona)
         elif num_media:
@@ -307,7 +369,15 @@ async def handle_message(user: str, text: str, num_media: int) -> None:
     except Exception:
         log.exception("Failed to handle message from %s", user[-4:])
         HISTORY.pop(user, None)  # start fresh rather than repeat a broken conversation
-        await send_text(user, "Sorry, something went wrong on my side. Please try again in a minute.")
+        try:  # one clean retry with a fresh conversation before apologising
+            reply = ask_claude(user, text, MODE.get(user, DEFAULT_MODE)) if text else None
+            if reply:
+                await send_text(user, reply)
+                return
+        except Exception:
+            log.exception("Retry also failed for %s", user[-4:])
+            HISTORY.pop(user, None)
+        await send_text(user, "Sorry, I hit a problem on my side. Please send that again.")
 
 
 def learn_base_url(request: Request) -> None:

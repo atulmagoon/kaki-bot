@@ -154,12 +154,22 @@ def _number(value: str) -> float | None:
 
 
 def _date(value: str) -> date | None:
-    value = (value or "").strip()
-    for fmt in ("%Y-%m-%d", "%d %b %Y", "%d %B %Y", "%d/%m/%Y"):
+    value = re.sub(r"(\d)(st|nd|rd|th)\b", r"\1", str(value or "").strip(), flags=re.I).replace(",", " ")
+    value = re.sub(r"\s+", " ", value).strip()
+    for fmt in ("%Y-%m-%d", "%d %b %Y", "%d %B %Y", "%b %d %Y", "%B %d %Y", "%d/%m/%Y", "%Y/%m/%d"):
         try:
             return datetime.strptime(value, fmt).date()
         except ValueError:
             pass
+    # No year given ("dec 22", "22 December", "22/12"): use the next date on or after today.
+    for fmt in ("%d %b", "%d %B", "%b %d", "%B %d", "%d/%m"):
+        try:
+            d = datetime.strptime(value, fmt).date()
+        except ValueError:
+            continue
+        today = date.today()
+        d = d.replace(year=today.year)
+        return d if d >= today else d.replace(year=today.year + 1)
     return None
 
 
